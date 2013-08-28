@@ -1,0 +1,97 @@
+""" Module movesb
+
+Define task movesb
+"""
+from ..task import Task
+from .. import mylogger
+from ..interface import find_node_from_SB
+
+class Movesb(Task):
+
+   __name__ = 'movesb'
+   __doc__ = 'doc for movesb'
+   banner = 'movesb: move SBs between nodes or spread them in the cluster'
+   arg_list = ['mode','fromnode','tonode','sb','msname','delete','maxused','repdir','renum']
+
+   def __init__(self, session):
+	Task.__init__(self, session, self.__name__)
+
+
+   def _partition(self, lst, n):
+      """Subdive a list "lst" in n sublists
+      """
+      q, r = divmod(len(lst), n)
+      indices = [q*i + min(i, r) for i in xrange(n+1)]
+      return [lst[indices[i]:indices[i+1]] for i in xrange(n)]
+
+
+   def run(self):
+      if self.session.get_status() == None:
+         self.mylog.error("Not connected to a cluster.")
+         return False
+
+      mode = self.session.opts.get_opt('mode')
+      s = self.session.get_status()
+      wdir = self.session.opts.get_opt('obsdir')+'/'+self.session._obs_name
+
+      if mode == 'move':
+
+          try:
+              SBs = s[self.session.opts.get_opt('fromnode')]['sb']
+          except:
+              self.mylog.error("Wrong \"fromnode\" parameter.")
+              return False
+          
+          if not self.session.opts.get_opt('tonode') in s:
+              self.mylog.error("Wrong \"tonode\" parameter.")
+              return False
+          
+          # create destination dir
+          command = 'mkdir -p ' + wdir
+          self.session.run_dist_com('movesb', '', command, node=self.session.opts.get_opt('tonode'))
+          # move SBs and optionally delete it
+          command = 'scp -r SB$SB ' + self.session.opts.get_opt('tonode') + ':'\
+		     + wdir + '/SB$SB'
+          if self.session.opts.get_opt('delete'): command += ' && rm -r SB$SB'
+          self.session.run_dist_com_all('movesb', wdir, command, SBs=self.session.opts.get_opt('sb'), nodes=self.session.opts.get_opt('fromnode'))
+
+   elif mode == 'spread':
+       import itertools, glob, os
+       import numpy as np
+       
+       # find usable nodes
+	   usablenodes = [node for node, val in s.iteritems() if val['df'] < self.session.opts.get_opt('maxused')]
+
+  	   mylogger.userinfo(self.mylog, "Found " + str(len(usablenodes)) + " usable nodes.")
+	   # prepare list of SB to copy
+	   tgtsbs = np.array(sorted(glob.glob(self.session.opts.get_opt('repdir')+'/*')))
+	   # randomize SBs (se if a node fails one does not loose nearby SBs
+	   p = np.random.permutation(len(tgtsbs))
+	   tgtsbs = tgtsbs[p]
+	   blocks = self._partition(tgtsbs, len(usablenodes))
+	 
+	   for i, nodeblock in enumerate(blocks):
+	       for j, SB in enumerate(nodeblock):
+	           SBnum = int(os.path.basename(SB).split('SB')[1][0:3]) # get SB num
+	       
+	           # restrict on the sb option
+	           if not SBnum in self.session.opts.get_opt('sb') and self.session.opts.get_opt('sb') != []: continue
+	           SBnum = str(SBnum - self.session.opts.get_opt('renum')).zfill(3)
+
+	           # if this SB is already present, use that node
+	           findnode = find_node_from_SB(s, SBnum)
+	           if findnode == None:
+		           node = usablenodes[i]
+		           mylogger.userinfo(self.mylog, node + ' (new): ' + SBnum)
+	           else:
+		           node = findnode
+		           mylogger.userinfo(self.mylog, node + ' (existent): ' + SBnum)
+
+	           # create dir
+	           command = 'mkdir -p ' + wdir + '/SB' + SBnum
+      	       self.session.run_dist_com('movesb', '', command, node=node)
+
+	           # move SB
+	           msname = self.session.opts.msname.replace('$SB',SBnum)
+ 	           command = 'cp -r ' + SB + ' ' + wdir + '/SB' + SBnum + '/' + msname
+      	       self.session.run_dist_com('movesb', wdir, command, node=node)
