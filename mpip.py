@@ -2,11 +2,6 @@
 # Software by Francesco de Gasperin (astro@voo.it)
 # Interface based on PyBDSM
 
-# TODO:
-#  - check the CPU usage on the frontend
-#  - runs longer than 1 day hangs
-#  - launch ipcluster without subprocess adding #eng and nodes
-
 import mpip
 from mpip.task import Task
 from mpip.session import Session

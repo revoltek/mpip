@@ -92,7 +92,7 @@ class Jobs(Task):
             mylogger.userinfo(self.mylog, str(num)+" processes listed.")
 
         elif jcmd == 'running':
-            num = 0
+            num_r = 0
             num_q = 0
             # TODO: it should be "Started" not "submitted", unfortunately ipython does not set it
             query = c.db_query({'completed': None},['buffers','engine_uuid','submitted'])
@@ -106,15 +106,18 @@ class Jobs(Task):
                         if self.session.opts.get_opt('queue') == False: continue
                         q['msg_id'] = q['msg_id']+" (queue)"
                         num_q += 1
+                    else:
+                        num_r += 1
 
                     header = {'Msg_id' : q['msg_id'], 'Task' : args['task'], 'Node' : args['node'], 'SB' : args['SB'], \
                        'Started' : q['submitted'].replace(microsecond=0), \
                        'Extime': datetime.datetime.now().replace(microsecond=0) - q['submitted'].replace(microsecond=0)}
+
                     data = {'Command': com[0]}
                     print_jobs(header, data, self.session.opts.get_opt('lines'))
-                    num += 1
 
-            mylogger.userinfo(self.mylog, str(num)+" processes running. In queue: "+str(num_q)+".")
+
+            mylogger.userinfo(self.mylog, "Processes running: "+str(num_r)+". In queue: "+str(num_q)+".")
         
         elif jcmd == 'kill':
             print "TBI"
