@@ -38,6 +38,7 @@ class Clcmd(Task):
                 # to find free space
                 @require('os')
                 def f():
+                    import os
                     s = os.statvfs('/data')
                     return 100*(1-float(s.f_bfree)/float(s.f_blocks))
 
@@ -61,6 +62,7 @@ class Clcmd(Task):
             # to find SBs
             @require('glob')
             def f(obsdir, obsname):
+                import glob
                 return (glob.glob(obsdir+'/'+obsname+'/SB*'), glob.glob(obsdir+'/'+obsname+'/group*'))
 
             # use the first engine of each node to retreive the SB info
