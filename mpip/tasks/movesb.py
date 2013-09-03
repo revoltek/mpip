@@ -11,7 +11,7 @@ class Movesb(Task):
     __name__ = 'movesb'
     __doc__ = 'doc for movesb'
     banner = 'movesb: move SBs between nodes or spread them in the cluster'
-    arg_list = ['mode','fromnode','tonode','sb','msname','delete','maxused','repdir','renum','destdir','untar']
+    arg_list = ['mode','fromnode','tonode','sb','msname','delete','maxused','repdir','renum','destdir','untar','http_stagefile']
 
     def __init__(self, session):
         Task.__init__(self, session, self.__name__)
