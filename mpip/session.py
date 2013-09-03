@@ -127,6 +127,7 @@ class Session(object):
         # define the function called by engines
         @require('subprocess, os')
         def f(c, node='', SB='', task='', wdir=''):
+            import os, subprocess
             if wdir != '' and os.path.isdir(wdir): os.chdir(wdir)
             s = subprocess.Popen(c, shell=True,\
                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
