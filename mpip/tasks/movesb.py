@@ -67,8 +67,8 @@ class Movesb(Task):
 
             # move data
             command = 'scp -r SB$SB/' + self.session.opts.get_opt('msname') + \
-                    ' ' + self.session.opts.get_opt('gtonode') + ':'\
-                    + wdir + '/' + self.session.opts.get_opt('gdestdir')
+                    ' ' + self.session.opts.get_opt('tonode') + ':' + \
+                    wdir + '/' + self.session.opts.get_opt('destdir')
             self.session.run_dist_com_all('movesb', wdir, command, SBs=self.session.opts.get_opt('sb'))
 
         elif mode == 'spread':
