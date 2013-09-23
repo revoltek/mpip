@@ -1,4 +1,4 @@
-#!/home/fdg/.virtualenvs/revenv/bin/ipython
+#!/home/fdg/.virtualenvs/revenv2/bin/ipython
 # Software by Francesco de Gasperin (astro@voo.it)
 # Interface based on PyBDSM
 
@@ -295,7 +295,7 @@ banner = '\nmpip version ' + __version__ + ' (revision ' + \
 
 # IPython must be >= 0.13
 try:
-    from IPython.frontend.terminal.embed import InteractiveShellEmbed
+    from IPython.terminal.embed import InteractiveShellEmbed
     from IPython.config.loader import Config
     from IPython import __version__ as ipython_version
     cfg = Config()

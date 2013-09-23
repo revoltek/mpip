@@ -26,7 +26,7 @@ class Run_casa(Task):
         # CASA must be run trough the xvfb-casapy.pl script (modified from NRAO pipeline)
         # which solves the problems with X using Xvfb properly
         casacommand = 'xvfb-casapy.pl -f '+self.session.opts.get_opt('casascript')+\
-                ' -args \''+self.session.opts.get_opt('casaargs')+'\''
+                ' -args \''+self.session.opts.get_opt('casaargs')+'\' >> run_casa.log'
         return self.session.run_dist_com_all('run_casa', wdir, casacommand, \
               self.session.opts.get_opt('sb'), self.session.opts.get_opt('node'), self.session.opts.get_opt('group'))
         

@@ -7,7 +7,7 @@ from .. import mylogger
 from ..interface import print_jobs
 import datetime
 from IPython.parallel import Client
-from IPython.zmq.serialize import unpack_apply_message
+from IPython.parallel.util import unpack_apply_message
 
 class Jobs(Task):
 
@@ -70,11 +70,11 @@ class Jobs(Task):
             query = c.db_query({'completed':{'$ne' : None }},['msg_id','completed','started'])
             # search for interesting results and print them
             for q in query:
-                try:
-                    result = c.get_result(q['msg_id']).get()
-                except:
-                    print "Error!"
-                    continue
+                #try:
+                result = c.get_result(q['msg_id']).get()
+                #except:
+                #    print "Error!"
+                #    continue
 
                 # filter on SB, node, task
                 if self._check_result(result):

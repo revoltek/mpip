@@ -10,13 +10,13 @@ from .. import mylogger
 from ..interface import print_cluster
 
 import subprocess, time, socket, os
-from IPython.parallel import require
+from IPython.parallel import require, interactive
 from os.path import expanduser
 import pickle
 
 class Clcmd(Task):
 
-    __name__ = 'clcod'
+    __name__ = 'clcmd'
     __doc__ = 'Define task clcmd which is used to fire up the engines, connect \
     to them and to shut them down.'
     banner = 'CLCOD: starts/stops/updates the engines for distributed tasks'
@@ -30,19 +30,22 @@ class Clcmd(Task):
         """Update the list of available engines and detect in which node they are
         """
         status = {}
-        for i, engine in enumerate(self.session.get_client()):
+        c = self.session.get_client()
+        for i in c.ids:
+            engine = c[i]
             # get the hostname of each node
             node = engine.apply_sync(socket.gethostname)
             if node not in status:
                 # define the function called by engines
                 # to find free space
-                @require('os')
+                @interactive
                 def f():
+                    import os
                     s = os.statvfs('/data')
                     return 100*(1-float(s.f_bfree)/float(s.f_blocks))
-
                 space = engine.apply_sync(f)
                 status[node]={'e':[], 'sb':[], 'group':[], 'df':space}
+
             status[node]['e'].append(i)
 
         if status == {}:
@@ -59,8 +62,9 @@ class Clcmd(Task):
         for node in status:
             # define the function called by the engines
             # to find SBs
-            @require('glob')
+            @interactive
             def f(obsdir, obsname):
+                import glob
                 return (glob.glob(obsdir+'/'+obsname+'/SB*'), glob.glob(obsdir+'/'+obsname+'/group*'))
 
             # use the first engine of each node to retreive the SB info
@@ -72,7 +76,7 @@ class Clcmd(Task):
                     null = int(SBnum)
                     status[node]['sb'].append(SBnum)
                 except:
-                    self.mylog.warning("Found a SB sub-dir not in the form SB###. Ignoring " + SB + ".")
+                    self.mylog.warning("Found a SB sub-dir not in the form SB###. Ignoring " + SB + " on node "+node+".")
             for group in groups:
                 groupname = os.path.basename(group).replace('group','')
                 status[node]['group'].append(groupname)

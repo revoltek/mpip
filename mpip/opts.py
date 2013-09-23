@@ -103,7 +103,7 @@ class Opts(object):
     jcmd = Enum('list', 'purge', 'running', 'kill', doc = "list/purge/running/kill job\n")
     lines = Int('5', doc = "Number of lines of output to print, 0=all")
     onlyerr = Bool(False, doc = "Show only jobs with errors.\n", group=['jcmd',['list']])
-    task = Enum('', 'run_bbs', 'run_awimager', 'run_cmd', doc = "Select on given task\n")
+    task = Enum('', 'run_bbs', 'run_awimager', 'run_cmd', 'run_casa', 'run_bbs', doc = "Select on given task\n")
     queue = Bool(True, doc = "Show also jobs in the queue.\n", group=['jcmd',['running']])
     jobid = String('', doc = "Job ID to kill.\n", group=['jcmd',['kill']])
 

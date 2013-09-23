@@ -3,11 +3,11 @@
 The Com class is a base class for all m-pip commands
 """
 
+import numpy as np
 from opts import *
 import mylogger
-from IPython.parallel import require
-import numpy as np
-from IPython.zmq.serialize import unpack_apply_message
+from IPython.parallel import interactive
+from IPython.parallel.util import unpack_apply_message
 
 class Session(object):
     """Primary data container for mpip.
@@ -125,8 +125,9 @@ class Session(object):
             self.mylog.error("Node parameter required to run a command.")
             return False
         # define the function called by engines
-        @require('subprocess, os')
+        @interactive
         def f(c, node='', SB='', task='', wdir=''):
+            import os, subprocess
             if wdir != '' and os.path.isdir(wdir): os.chdir(wdir)
             s = subprocess.Popen(c, shell=True,\
                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
