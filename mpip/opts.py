@@ -56,7 +56,9 @@ class Opts(object):
     bbsopt = String('-f', doc = "Option for bbs [default: -f]\n")
 
     # run_ndppp
-    ndppp_parset = String('', doc = "Parset file for a NDPPP run\n")
+    ndppp_parset = String('', doc = "Parset file for an NDPPP run (this parset must not contain msin and msout parameters)\n")
+    msin = String('', doc = "MS for input to an NDPPP run\n")
+    msout = String('', doc = "MS for output from an NDPPP run\n")
 
     # run_imager
     operation = Enum('csclean', 'empty', 'image', 'predict', 'psf',\
