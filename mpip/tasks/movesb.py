@@ -105,7 +105,7 @@ class Movesb(Task):
 
                     # create dir
                     command = 'mkdir -p ' + wdir + '/SB' + SBnum
-                    self.session.run_dist_com('movesb', '', command, node=node)
+                    self.session.run_dist_com('movesb', '', command, node=node, SB=SBnum)
 
                     # move SB
                     wdirsb = wdir + '/SB' + SBnum + '/'
@@ -114,7 +114,7 @@ class Movesb(Task):
                     if self.session.opts.get_opt('untar'):
                         command += ' ; tar xf ' + os.path.basename(SB) + ' && mv ' + os.path.basename(SB).replace('.tar', '') + ' ' + msname + ' && ' + 'rm ' + os.path.basename(SB)
                     else: command += ' && mv ' +  os.path.basename(SB) + ' ' + msname
-                    self.session.run_dist_com('movesb', wdirsb, command, node=node)
+                    self.session.run_dist_com('movesb', wdirsb, command, node=node, SB=SBnum)
 
         # get data from LTA: 
         elif mode == 'LTAspread':

@@ -95,6 +95,7 @@ class Session(object):
         if s == None:
             self.mylog.error("Not connected to a cluster.")
             return False
+        njobs = 0
         for node in s:
             # shall we proceed with this node?
             if (node in nodes or nodes == ''):
@@ -110,6 +111,8 @@ class Session(object):
                         # for groups rename the variable
                         if group: SB = 'g'+SB
                         self.run_dist_com(task, rwdir, rcommand, SB, node)
+                        njobs += 1
+        mylogger.userinfo(self.mylog, "Launched "+str(njobs)+" jobs.")
 
 
     def run_dist_com(self, task, wdir, command, SB='', node=''):
