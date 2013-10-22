@@ -89,12 +89,12 @@ class Opts(object):
                                 "It understands the $SB convenction.")
 
     # movems
-    mode = Enum('move','spread','group','LTAspread', doc = "'Move' SB from a node to another, 'group' them in a destination directory, 'spread' them across the cluster or 'LTAspread' them from the LTA across the cluster.\n")
+    mode = Enum('move','arrange','spread','group','LTAspread', doc = "'Move' SB from a node to another, 'group' them in a destination directory, 'spread' them across the cluster or 'LTAspread' them from the LTA across the cluster.\n")
     fromnode = String('', doc = "Starting node.\n", group=['mode',['move']])
     tonode = String('', doc = "Destination node.\n", group=['mode',['move','group']])
     #gtonode = String('', doc = "Destination node.\n", group=['mode','group'])
     delete = Bool(False, doc = "Delete SB after moving.\n", group=['mode',['move']])
-    maxused = Float(80, doc = "Percentage of max used space in a node to use it.\n", group=['mode',['LTAspread','spread']])
+    maxused = Float(80, doc = "Percentage of max used space in a node to use it.\n", group=['mode',['LTAspread','spread','arrange']])
     repdir = String('', doc = "Directory with all the MSs.\n", group=['mode',['spread']])
     http_stagefile = String('', doc = "HTML staging file containing staged paths for SBs.\n", group=['mode',['LTAspread']])
     renum = Int(0, doc = "Renumerate all SBs subtracting this number.\n", group=['mode',['LTAspread','spread']])

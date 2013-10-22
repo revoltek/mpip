@@ -4,7 +4,6 @@ Define task movesb
 """
 from ..task import Task
 from .. import mylogger
-from ..interface import find_node_from_SB
 
 class Movesb(Task):
 
@@ -55,6 +54,61 @@ class Movesb(Task):
             if self.session.opts.get_opt('delete'): command += ' && rm -r SB$SB'
             self.session.run_dist_com_all('movesb', wdir, command, SBs=self.session.opts.get_opt('sb'), nodes=self.session.opts.get_opt('fromnode'))
 
+            # update session
+            if self.session.opts.get_opt('sb') != []:
+                SBs = self.session.opts.get_opt('sb')
+            else:
+                SBs = s[self.session.opts.get_opt('fromnode')]['sb']
+
+            for SB in SBs:
+                s[self.session.find_node_from_SB(SB)]['sb'].remove(SB)
+                s[node]['sb'].append(SB)
+                self.session.save_status()
+
+        elif mode == 'arrange':
+            import numpy as np
+
+            try:
+                SBs = s[self.session.opts.get_opt('fromnode')]['sb']
+            except:
+                self.mylog.error("Wrong \"fromnode\" parameter.")
+                return False
+            
+            # find max SBs per node allawed
+            max_SBs_per_node = int(np.ceil(len(self.session.get_avail_SBs()) / float(len(self.session.get_avail_nodes(maxused = self.session.opts.get_opt('maxused'))))))
+
+            # collect SBs to move
+            SBs_to_move = []
+            for node in sorted(s.iterkeys()):
+                # not enough space
+                space = int(s[node]['df'])
+                if space >= 95:
+                    SBs_to_move.extend(s[node]['sb'])
+                # too many on this node
+                elif len(s[node]['sb']) > max_SBs_per_node:
+                    SBs_to_move.extend(s[node]['sb'][:len(s[node]['sb'])-max_SBs_per_node])
+
+            # find free spots
+            for SB in SBs_to_move:
+                # get the node with less SBs
+                minSBnum = np.inf
+                for node_to_inspect in self.session.get_avail_nodes(maxused = self.session.opts.get_opt('maxused'), maxSB = max_SBs_per_node):
+                    if len(s[node_to_inspect]['sb']) < minSBnum:
+                        minSBnum = len(s[node_to_inspect]['sb'])
+                        node = node_to_inspect
+
+                # create destination dir
+                command = 'mkdir -p ' + wdir
+                self.session.run_dist_com('movesb', '', command, node=node)
+                command = 'scp -r SB' + SB + ' ' + node + ':'\
+                       + wdir + '/SB' + SB + ' && rm -r SB' + SB
+                self.session.run_dist_com('movesb', wdir, command, SB=SB, node=self.session.find_node_from_SB(SB))
+                # update session
+                s[self.session.find_node_from_SB(SB)]['sb'].remove(SB)
+                s[node]['sb'].append(SB)
+                self.session.save_status()
+
+
         elif mode == 'group':
 
             if not self.session.opts.get_opt('tonode') in s:
@@ -95,7 +149,7 @@ class Movesb(Task):
                     SBnum = str(SBnum - self.session.opts.get_opt('renum')).zfill(3)
 
                     # if this SB is already present, use that node
-                    findnode = find_node_from_SB(s, SBnum)
+                    findnode = s.find_node_from_SB(SBnum)
                     if findnode == None:
                         node = usablenodes[i]
                         mylogger.userinfo(self.mylog, node + ' (new): ' + SBnum)
@@ -157,7 +211,7 @@ class Movesb(Task):
                     SBnum = str(SBnum - self.session.opts.get_opt('renum')).zfill(3)
 
                     # if this SB is already present, use that node
-                    findnode = find_node_from_SB(s, SBnum)
+                    findnode = s.find_node_from_SB(SBnum)
                     if findnode == None:
                         node = usablenodes[i]
                         mylogger.userinfo(self.mylog, node + ' (new): ' + SBnum)

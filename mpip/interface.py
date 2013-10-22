@@ -413,10 +413,14 @@ def print_cluster(status):
     num_e = num_e_red = num_e_yellow = num_e_green = 0
     num_SB = num_SB_red = num_SB_yellow = num_SB_green = 0
     num_group = num_group_red = num_group_yellow = num_group_green = 0
+    avail_SBs = []
+    avail_nodes = []
     if status is not None:
         for node in sorted(status.iterkeys()):
             print node + ": " + str(len(status[node]['e'])),
             space = int(status[node]['df'])
+            avail_SBs.extend(status[node]['sb'])
+            avail_nodes.append(node)
 
             if (space >= 95):
                 print " \033[0;31m(" + str(space) + "%)\033[0m",
@@ -452,6 +456,22 @@ def print_cluster(status):
             num_SB += len(status[node]['sb'])
             num_group += len(status[node]['group'])
             print "\n",
+
+        avail_SBs = [int(SB) for SB in avail_SBs]
+        if len(avail_SBs) != (max(avail_SBs)+1):
+            print "--> Missing SBs: ",
+            for SB in xrange(max(avail_SBs)+1):
+                if not SB in avail_SBs:
+                    print SB,
+            print ""
+    
+        if len(avail_nodes) != 60:
+            print "--> Missing Nodes: ",
+            for node in xrange(1,61):
+                if not 'lce%03d' % node in avail_nodes:
+                    print node,
+            print ""
+
         print "\n\033[1;34m--> Total engines: " + str(num_e) + \
               " (\033[1;32m" + str(num_e_green) + \
               "\033[1;34m, \033[1;33m" + str(num_e_yellow) + \
@@ -464,18 +484,9 @@ def print_cluster(status):
               " (\033[1;32m" + str(num_group_green) + \
               "\033[1;34m, \033[1;33m" + str(num_group_yellow) + \
               "\033[1;34m, \033[1;31m" + str(num_group_red) + "\033[1;34m)"
+
     else:
         print "Engines are off."
-
-
-def find_node_from_SB(status, targetSB):
-    """Find the node which has a particular SB
-    """
-    for node in status:
-        for SB in status[node]['sb']:
-            if SB == targetSB:
-                return node
-    return None
 
 
 def wrap(text, width=80):

@@ -11,7 +11,6 @@ from ..interface import print_cluster
 
 import subprocess, time, socket, os
 from IPython.parallel import require, interactive
-from os.path import expanduser
 import pickle
 
 class Clcmd(Task):
@@ -82,24 +81,6 @@ class Clcmd(Task):
                 status[node]['group'].append(groupname)
 
 
-    def _save_status(self):
-        """Save/update the _cluster_status in a pickle file.
-
-        The file is a dict:
-        {obsname1: _cluster_status, obsname2: _cluster_status}
-        """
-        home = expanduser("~")
-        pstatus = {}
-        if os.path.isfile(home + '/.cluster_status.mpip'):
-            pkl_file = open(home + '/.cluster_status.mpip', 'rb')
-            pstatus = pickle.load(pkl_file)
-            pkl_file.close()
-        pstatus[self.session.opts.get_opt('obsname')] = self.session.get_status()
-        pkl_file = open(home + '/.cluster_status.mpip', 'wb')
-        pickle.dump(pstatus, pkl_file)
-        pkl_file.close()
-
-
     def _no_engine_running(self):
         """Return True if no engines are running.
         """
@@ -120,7 +101,7 @@ class Clcmd(Task):
             if self.session.set_client():
                 # load _cluster_status for this obsname from saved file
                 try:
-                    home = expanduser("~")
+                    home = os.path.expanduser("~")
                     pkl_file = open(home + '/.cluster_status.mpip', 'rb')
                     status = pickle.load(pkl_file)[self.session.opts.get_opt('obsname')]
                     pkl_file.close()
@@ -133,7 +114,7 @@ class Clcmd(Task):
                         mylogger.userinfo(self.mylog, "Updating cluster status for unsaved obsname.")
                         self._update()
                         self._populate()
-                        self._save_status()
+                        self.session.save_status()
                     # TODO: if some engine are running, force a new cluster to start,
                     # collect data and quit (find a better solution! -> use the get_result of the first time we run the populate?)
                     else:
@@ -159,7 +140,7 @@ class Clcmd(Task):
                         if timeout == 0: raise Exception("Timeout.")
                     self._update()
                     self._populate()
-                    self._save_status()
+                    self.session.save_status()
                     mylogger.userinfo(self.mylog, "If engines are missing, try ccmd='update'\n \
                        probably the cluster needs some time to start.")
                 except Exception, e:
@@ -190,7 +171,7 @@ class Clcmd(Task):
                 mylogger.userinfo(self.mylog, "Updating cluster status.")
                 self._update()
                 self._populate()
-                self._save_status()
+                self.session.save_status()
                 print_cluster(self.session._cluster_status)
                 return True
             else:

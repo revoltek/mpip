@@ -3,6 +3,7 @@
 The Com class is a base class for all m-pip commands
 """
 
+import os, pickle
 import numpy as np
 from opts import *
 import mylogger
@@ -11,8 +12,6 @@ from IPython.parallel.util import unpack_apply_message
 
 class Session(object):
     """Primary data container for mpip.
-
-
     """
     mylogger.init_logger("mpip.log")
     mylog = mylogger.logging.getLogger("mpip.session")
@@ -33,16 +32,36 @@ class Session(object):
     def set_status(self, status, obs_name=None):
         """Set cluster status and possibly obs_name and prompt"""
         self._cluster_status = status
-        self._obs_name = obs_name
+        if obs_name != None: self._obs_name = obs_name
         # change prompt
         if obs_name == None:
             self._ipshell.prompt_manager.in_template = "MPIP [\#]: "
         else:
             self._ipshell.prompt_manager.in_template = "MPIP (" + obs_name + ") [\#]: "
 
+
+    def save_status(self):
+        """Save/update the _cluster_status in a pickle file.
+
+        The file is a dict:
+        {obsname1: _cluster_status, obsname2: _cluster_status}
+        """
+        home = os.path.expanduser("~")
+        pstatus = {}
+        if os.path.isfile(home + '/.cluster_status.mpip'):
+            pkl_file = open(home + '/.cluster_status.mpip', 'rb')
+            pstatus = pickle.load(pkl_file)
+            pkl_file.close()
+        pstatus[self._obs_name] = self._cluster_status
+        pkl_file = open(home + '/.cluster_status.mpip', 'wb')
+        pickle.dump(pstatus, pkl_file)
+        pkl_file.close()
+
+
     def get_status(self):
         """Get cluster status"""
         return self._cluster_status
+
 
     def set_client(self):
         """Set current cluster client"""
@@ -85,6 +104,43 @@ class Session(object):
                 SBids.append(q['msg_id'])
 
         return SBids
+
+
+    def get_avail_nodes(self, maxused = 95, maxSB = 10):
+        """
+        Return a list of usable nodes.
+        """
+        s = self.get_status()
+        nodes = []
+        for node in s:
+            if s[node]['df'] <= maxused and len(s[node]['sb']) < maxSB:
+                nodes.append(node)
+        return nodes
+
+
+    def get_avail_SBs(self):
+        """
+        Return a list of available SBs.
+        """
+        s = self.get_status()
+        SBs = []
+        for node in s:
+            nodeSBs = s[node]['sb']
+            for SB in nodeSBs:
+                SBs.append(SB)
+        return SBs
+
+
+
+    def find_node_from_SB(self, targetSB):
+        """Find the node which has a particular SB
+        """
+        s = self.get_status()
+        for node in s:
+            for SB in s[node]['sb']:
+                if SB == targetSB:
+                    return node
+        return None
 
 
     def run_dist_com_all(self, task, wdir, command, SBs=[], nodes='', group=False):
