@@ -149,7 +149,7 @@ class Movesb(Task):
                     SBnum = str(SBnum - self.session.opts.get_opt('renum')).zfill(3)
 
                     # if this SB is already present, use that node
-                    findnode = s.find_node_from_SB(SBnum)
+                    findnode = self.session.find_node_from_SB(SBnum)
                     if findnode == None:
                         node = usablenodes[i]
                         mylogger.userinfo(self.mylog, node + ' (new): ' + SBnum)

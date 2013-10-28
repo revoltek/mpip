@@ -89,7 +89,7 @@ class Opts(object):
                                 "It understands the $SB convenction.")
 
     # movems
-    mode = Enum('move','arrange','spread','group','LTAspread', doc = "'Move' SB from a node to another, 'group' them in a destination directory, 'spread' them across the cluster or 'LTAspread' them from the LTA across the cluster.\n")
+    mode = Enum('move','arrange','spread','group','LTAspread', doc = "'Move' SB from a node to another, 'group' them in a destination directory, 'spread' them across the cluster or 'LTAspread' them from the LTA across the cluster. 'Arrange' SB in a smart way.\n")
     fromnode = String('', doc = "Starting node.\n", group=['mode',['move']])
     tonode = String('', doc = "Destination node.\n", group=['mode',['move','group']])
     #gtonode = String('', doc = "Destination node.\n", group=['mode','group'])
