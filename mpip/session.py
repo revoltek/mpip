@@ -3,7 +3,7 @@
 The Com class is a base class for all m-pip commands
 """
 
-import os, pickle
+import os, pickle, time
 import numpy as np
 from opts import *
 import mylogger
@@ -200,6 +200,7 @@ class Session(object):
             scheduler = self.get_client().load_balanced_view(s[node]['e'])
             # Exec a job on a SB only if previous jobs on that
             # SB are finished and finished without errors
+            time.sleep(0.1) # TODO: check if this minimize the buffer problem
             after_ids = self.getSBids(SB)
             with scheduler.temp_flags(after=after_ids, retries=3):
                 scheduler.apply_async(f, command, node=node, SB=SB, task=task, wdir=wdir)
