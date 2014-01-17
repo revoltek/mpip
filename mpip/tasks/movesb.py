@@ -145,8 +145,8 @@ class Movesb(Task):
                     SBnum = int(os.path.basename(SB).split('SB')[1][0:3]) # get SB num
 
                     # restrict on the sb option
-                    if not SBnum in self.session.opts.get_opt('sb') and self.session.opts.get_opt('sb') != []: continue
                     SBnum = str(SBnum - self.session.opts.get_opt('renum')).zfill(3)
+                    if not int(SBnum) in self.session.opts.get_opt('sb') and self.session.opts.get_opt('sb') != []: continue
 
                     # if this SB is already present, use that node
                     findnode = self.session.find_node_from_SB(SBnum)
@@ -207,8 +207,8 @@ class Movesb(Task):
                     SBnum = int(SBpath_name.split('SB')[1][0:3]) # get SB num
 
                     # restrict on the sb option
-                    if not SBnum in self.session.opts.get_opt('sb') and self.session.opts.get_opt('sb') != []: continue
                     SBnum = str(SBnum - self.session.opts.get_opt('renum')).zfill(3)
+                    if not int(SBnum) in self.session.opts.get_opt('sb') and self.session.opts.get_opt('sb') != []: continue
 
                     # if this SB is already present, use that node
                     findnode = s.find_node_from_SB(SBnum)
